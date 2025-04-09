@@ -1,0 +1,89 @@
+body {
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.login-box, .booking-box {
+  width: 300px;
+  padding: 40px;
+  background: white;
+  margin: 100px auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 5px;
+}
+
+.user-box {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.time-slot {
+  animation-fill-mode: backwards;
+}
+
+.user-box input, .user-box select {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid #333;
+  outline: none;
+  background: transparent;
+}
+
+.user-box label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px 0;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%;
+}
+
+button:hover {
+  background: #45a049;
+}
+/* Alert animations */
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.alert {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.alert.fade-out {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+.autofill-overlay {
+  display: none !important;
+}
+
+.time-slot {
+  opacity: 1 !important; /* Override the animation opacity */
+  background-color: #fff; /* Ensure contrast */
+  color: #000; /* Ensure text visibility */
+}

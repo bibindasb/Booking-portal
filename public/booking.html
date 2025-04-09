@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Media.net Drop Interface</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .time-slot { 
+      transition: all 0.3s ease;
+      border-width: 1px;
+    }
+    
+    .time-slot:hover:not(.selected) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .time-slot.selected { 
+      background-color: #dd1d1d; 
+      color: rgb(255, 255, 255); 
+      border-color: #eb2020;
+      box-shadow: 0 4px 12px rgba(236, 38, 38, 0.5);
+    }
+    
+    .modal { 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    
+    @keyframes slotAppear {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .alert {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(235, 59, 5, 0.05);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      animation: slideIn 0.3s ease-out forwards;
+    }
+    
+    .alert.error {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border-left: 4px solid #b91c1c;
+    }
+    
+    .alert.success {
+      background-color: #dcfce7;
+      color: #166534;
+      border-left: 4px solid #166534;
+    }
+    
+    .alert.warning {
+      background-color: #fef3c7;
+      color: #92400e;
+      border-left: 4px solid #92400e;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    .glass-morphism {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(15px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .input-focus-effect:focus {
+      box-shadow: 0 0 0 2px rgba(241, 29, 29, 0.5);
+    }
+    
+    .booking-card {
+      transition: all 0.3s ease;
+    }
+    
+    .booking-card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans bg-cover bg-no-repeat bg-center text-dark" style="background-image: url('/assets/background.jpg');">
+  <!-- Background overlay with gradient -->
+  <div class="fixed inset-0 bg-gradient-to-br from-black/30 to-black/70 backdrop-blur-sm z-0"></div>
+
+  <header class="z-10 relative bg-white/10 backdrop-blur-md shadow-lg border-b border-white/20">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center">
+        <img 
+        src="/assets/media.png" 
+        alt="Company Logo" 
+        class="h-14 object-contain"  <!-- Adjust height as needed -->
+      
+    </div>
+      <div class="flex items-center space-x-4">
+        <div class="bg-blue-100/70 backdrop-blur-md text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm flex items-center">
+          <i class="fas fa-location-dot mr-2"></i>
+          <span id="currentLocation">Loading...</span>
+        </div>
+        <button onclick="logout()" class="text-red-600 hover:text-red-700 hover:bg-white/10 px-3 py-2 rounded-lg flex items-center transition-all duration-200">
+          <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <!-- Booking Form (Left side) -->
+    <div class="lg:col-span-2">
+      <div class="glass-morphism shadow-2xl overflow-hidden">
+        <div class="border-b border-white/20 px-6 py-5 backdrop-blur-sm bg-white/5">
+          <h2 class="text-xl font-semibold text-white flex items-center">
+            <i class="fas fa-calendar-alt text-blue-400 mr-3"></i>
+            Book Your Cab
+          </h2>
+        </div>
+        <div class="p-8 text-white">
+          <form id="bookingForm" class="space-y-8">
+            <!-- Destination -->
+            <div>
+              <label class="block text-sm font-medium mb-2 flex items-center">
+                <i class="fas fa-map-marker-alt text-blue-400 mr-2"></i>
+                Destination
+              </label>
+              <div class="relative">
+                <select id="destination" required
+                  class="block w-full pl-4 pr-10 py-3 text-base border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
+                  <option value="">Select your destination</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-blue-300"></i>
+                </div>
+              </div>
+            </div>
+
+<!-- With this single dropdown -->
+<div>
+  <label class="block text-sm font-medium mb-2 flex items-center">
+    <i class="fas fa-calendar-alt text-blue-400 mr-2"></i>
+    Select Date & Time
+  </label>
+  <div class="relative">
+    <select id="dateTimeSlot" required
+      class="block w-full pl-4 pr-10 py-3 text-base border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
+      <option value="">Select date and time</option>
+    </select>
+    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+      <i class="fas fa-chevron-down text-blue-300"></i>
+    </div>
+  </div>
+</div>
+
+            <!-- Submit Button -->
+            <div class="pt-4">
+              <button type="submit" 
+                class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-4 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                Confirm Booking
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Bookings (Right side) -->
+    <div class="glass-morphism p-6 sticky top-20 self-start max-h-[90vh] overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-6 flex items-center text-white">
+        <i class="fas fa-list-check text-blue-400 mr-2"></i> My Bookings
+      </h2>
+      <div id="myBookingsList" class="space-y-4">
+        <!-- User bookings will go here -->
+      </div>
+    </div>
+  </main>
+  <!-- Confirmation Modal -->
+  <div id="confirmationModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden modal">
+    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-md shadow-2xl transform transition-all">
+      <div class="p-8 text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
+          <i class="fas fa-check text-green-500 text-3xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed!</h3>
+        <div class="bg-gray-50 rounded-xl p-5 mb-6 text-left shadow-inner">
+          <div class="flex justify-between items-center mb-4">
+            <span class="text-gray-600">Destination:</span>
+            <span class="font-medium text-gray-900" id="confirmationDestination"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600">Time:</span>
+            <span class="font-medium text-gray-900" id="confirmationTime"></span>
+          </div>
+        </div>
+        <button onclick="closeModal()" 
+               class="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('token');
+    let config = {
+      bangalore: { timeSlots: [], destinations: [] },
+      mumbai: { timeSlots: [], destinations: [] }
+    };
+
+    // Load configuration from server
+    async function loadConfig() {
+      try {
+        const response = await fetch('/api/config', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) throw new Error('Failed to load config');
+        
+        const data = await response.json();
+        if (data.bangalore) config.bangalore = data.bangalore;
+        if (data.mumbai) config.mumbai = data.mumbai;
+      } catch (error) {
+        console.error('Error loading config:', error);
+        showAlert('Failed to load booking options', 'error');
+      }
+    }
+
+    // Time Calculations
+    function parseTime(timeStr) {
+      const [time, period] = timeStr.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (period === 'PM' && hours < 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      return { hours, minutes };
+    }
+
+// Replace getAvailableTimeSlots function with:
+function getDateTimeSlots() {
+  const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
+  const now = new Date();
+  const istOptions = { timeZone: 'Asia/Kolkata' };
+  
+  // Create today and tomorrow dates in IST
+  const today = new Date(now.toLocaleString('en-US', istOptions));
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  // Format dates as YYYY-MM-DD
+  const formatDate = (date) => date.toISOString().split('T')[0];
+  
+  // Get all configured time slots
+  const timeSlots = config[location]?.timeSlots || [];
+  
+  // Generate date-time combinations
+  const slots = [];
+  [today, tomorrow].forEach(date => {
+    timeSlots.forEach(time => {
+      const [timePart, period] = time.split(' ');
+      let [hours, minutes] = timePart.split(':').map(Number);
+      
+      // Convert to 24h format
+      if (period === 'PM' && hours < 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      // Create slot datetime
+      const slotDateTime = new Date(date);
+      slotDateTime.setHours(hours, minutes, 0, 0);
+      
+      // Check cutoff time (3 hours before)
+      const cutoff = new Date(slotDateTime.getTime() - (3 * 60 * 60 * 1000));
+      
+      if (now < cutoff) {
+        slots.push({
+          date: formatDate(date),
+          time,
+          datetime: slotDateTime
+        });
+      }
+    });
+  });
+  
+  return slots;
+}
+
+// Update the updateBookingInterface function:
+async function updateBookingInterface() {
+  await loadConfig();
+  const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
+  
+  // Update destinations (keep existing code)
+  const destSelect = document.getElementById('destination');
+  destSelect.innerHTML = '<option value="">Select destination</option>';
+  config[location].destinations.forEach(dest => {
+    const option = document.createElement('option');
+    option.value = option.textContent = dest;
+    destSelect.appendChild(option);
+  });
+  
+  // Update date-time dropdown
+  const dateTimeSelect = document.getElementById('dateTimeSlot');
+  dateTimeSelect.innerHTML = '<option value="">Select date and time</option>';
+  const slots = getDateTimeSlots();
+  
+  slots.forEach(slot => {
+    const option = document.createElement('option');
+    option.value = `${slot.date}|${slot.time}`;
+    option.textContent = `${slot.date} ${slot.time}`;
+    option.disabled = slot.datetime < new Date(); // Disable past slots
+    dateTimeSelect.appendChild(option);
+  });
+}
+
+    // Handle booking submission
+    async function handleBooking(e) {
+  e.preventDefault();
+  try {
+    const dest = document.getElementById('destination').value;
+    const dateTime = document.getElementById('dateTimeSlot').value;
+    const [travelDate, time] = dateTime.split('|'); // Split the combined value
+    const employeeId = sessionStorage.getItem('username');
+    const location = sessionStorage.getItem('location');
+    
+    if (!dest || !dateTime) {
+      showAlert('Please fill all required fields', 'error');
+      return;
+    }
+
+        const selectedDate = new Date(travelDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+          showAlert('Travel date cannot be in the past', 'error');
+          return;
+        }
+
+        const response = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ 
+            employeeId, 
+            location, 
+            destination: dest, 
+            timeSlot: time,
+            travelDate
+          })
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to create booking');
+        }
+
+        // Show success
+        document.getElementById('confirmationDestination').textContent = dest;
+        document.getElementById('confirmationTime').textContent = `${formatDate(travelDate)} at ${time}`;
+        document.getElementById('confirmationModal').classList.remove('hidden');
+        
+        // Refresh bookings list
+        await loadMyBookings();
+        showAlert('Booking created successfully!', 'success');
+
+      } catch (error) {
+        console.error('Booking error:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Load user's bookings
+    async function loadMyBookings() {
+      try {
+        const employeeId = sessionStorage.getItem('username');
+        const response = await fetch(`/api/bookings?employeeId=${employeeId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load bookings');
+        
+        const bookings = await response.json();
+        const bookingsList = document.getElementById('myBookingsList');
+        bookingsList.innerHTML = '';
+
+        // ✅ Sort by status: confirmed → pending → cancelled
+        bookings.sort((a, b) => {
+          const order = { confirmed: 0, pending: 1, cancelled: 2 };
+          return order[a.status] - order[b.status];
+        });
+        
+        if (bookings.length === 0) {
+          bookingsList.innerHTML = '<p class="text-gray-300 text-center py-4">No bookings found</p>';
+          return;
+        }
+        
+        bookings.forEach(booking => {
+          const bookingElement = document.createElement('div');
+          bookingElement.className =
+            'booking-card rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4 text-white mb-4';
+
+          const statusColor =
+            booking.status === 'confirmed'
+              ? 'bg-green-500/20 text-green-300 border-green-500/30'
+              : booking.status === 'cancelled'
+              ? 'bg-red-500/20 text-red-300 border-red-500/30'
+              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+
+          bookingElement.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-sm font-semibold">${booking.destination}</div>
+                <div class="text-xs text-gray-300 mt-1">
+                  <i class="fas fa-calendar-day mr-1"></i>${formatDate(booking.travelDate)} 
+                  <i class="fas fa-clock ml-3 mr-1"></i>${booking.timeSlot}
+                </div>
+                <span class="inline-block mt-2 text-xs px-2 py-1 font-medium rounded-md border ${statusColor}">
+                  ${booking.status}
+                </span>
+              </div>
+
+              <div class="space-y-2 text-right ml-3">
+                ${booking.status !== 'cancelled' ? `
+                  <button onclick="cancelBooking('${booking._id}')" 
+                    class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-300 px-2 py-1 rounded-md transition-colors duration-200">
+                    <i class="fas fa-times-circle mr-1"></i>Cancel
+                  </button>` : ''}
+                ${booking.status === 'pending' ? `
+                  <button onclick="confirmBooking('${booking._id}')" 
+                    class="text-xs bg-green-500/10 hover:bg-green-500/20 text-green-300 px-2 py-1 rounded-md transition-colors duration-200">
+                    <i class="fas fa-check-circle mr-1"></i>Confirm
+                  </button>` : ''}
+              </div>
+            </div>
+          `;
+          bookingsList.appendChild(bookingElement);
+        });
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        showAlert('Failed to load bookings', 'error');
+      }
+    }
+
+    // Cancel booking
+    async function cancelBooking(bookingId) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+      
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}/status`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: 'cancelled' })
+        });
+        
+        if (!response.ok) throw new Error('Failed to cancel booking');
+        
+        await loadMyBookings();
+        showAlert('Booking cancelled successfully', 'success');
+      } catch (error) {
+        console.error('Error cancelling booking:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Confirm booking
+    async function confirmBooking(bookingId) {
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}/status`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: 'confirmed' })
+        });
+        
+        if (!response.ok) throw new Error('Failed to confirm booking');
+        
+        await loadMyBookings();
+        showAlert('Booking confirmed successfully', 'success');
+      } catch (error) {
+        console.error('Error confirming booking:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert ${type}`;
+      alertDiv.innerHTML = `
+        <i class="fas ${
+          type === 'error' ? 'fa-exclamation-circle' :
+          type === 'success' ? 'fa-check-circle' :
+          'fa-info-circle'
+        } mr-2"></i>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.style.animation = 'fadeOut 0.5s ease-out forwards';
+        setTimeout(() => alertDiv.remove(), 500);
+      }, 5000);
+    }
+
+    function closeModal() {
+      document.getElementById('confirmationModal').classList.add('hidden');
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    // Initialize the app
+    async function init() {
+      const location = sessionStorage.getItem('location');
+      const username = sessionStorage.getItem('username');
+      
+      if (!location || !username || !token) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('currentLocation').textContent = 
+        location.charAt(0).toUpperCase() + location.slice(1);
+
+      // Set minimum date for date picker to today
+      const today = new Date().toISOString().split('T')[0];
+
+      await updateBookingInterface();
+      await loadMyBookings();
+      document.getElementById('bookingForm').onsubmit = handleBooking;
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
