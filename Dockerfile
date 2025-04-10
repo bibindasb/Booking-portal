@@ -9,6 +9,12 @@ COPY package*.json ./
 RUN npm install
 RUN npm install -g nodemon
 
+# time zone
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && \
+    echo "Asia/Kolkata" > /etc/timezone
+
+
 # Copy entire app source code into container
 COPY . .
 
