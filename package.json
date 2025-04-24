@@ -15,7 +15,7 @@
     "jsonwebtoken": "^9.0.2",
     "ldap": "^0.7.1",
     "ldapjs": "^3.0.7",
-    "mongoose": "^7.8.6",
+    "mongoose": "^8.13.2",
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.10.0",
     "path": "^0.12.7",
@@ -29,7 +29,7 @@
     "url": "git+https://github.com/bibindasb/Cabbooking-web.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "bibin.b",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/bibindasb/Cabbooking-web/issues"
