@@ -251,6 +251,8 @@ function renderConfig(config) {
     const timeList = document.getElementById(`${location}TimeSlotsList`);
     const destList = document.getElementById(`${location}DestinationsList`);
     if (!timeList || !destList) return;
+
+    // Time slots rendering remains same
     timeList.innerHTML = (config[location]?.timeSlots || []).map((time, idx) => `
       <div class="flex items-center space-x-2 py-1">
         <span>${time}</span>
@@ -259,8 +261,10 @@ function renderConfig(config) {
         </button>
       </div>
     `).join('');
+
+    // Modified destination rendering with data attributes
     destList.innerHTML = (config[location]?.destinations || []).map((dest, idx) => `
-      <div class="flex items-center space-x-2 py-1">
+      <div class="flex items-center space-x-2 py-1" data-destination="${dest.toLowerCase()}">
         <span>${dest}</span>
         <button onclick="removeDestination('${location}', ${idx})" class="text-red-600 hover:text-red-800 text-sm">
           ✖
@@ -442,6 +446,38 @@ window.adminUpdateBooking = async (id, status) => {
     showLoader(false);
   }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize destination filters
+  const initDestinationFilters = () => {
+    ['bangalore', 'mumbai'].forEach(location => {
+      const searchId = `search${capitalize(location)}`;
+      const searchInput = document.getElementById(searchId);
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          filterDestinations(location, e.target.value.trim());
+        });
+      }
+    });
+  };
+
+  // Initial call
+  initDestinationFilters();
+});
+
+function filterDestinations(location, query) {
+  const destList = document.getElementById(`${location}DestinationsList`);
+  if (!destList) return;
+
+  const items = destList.querySelectorAll('[data-destination]');
+  const searchTerm = query.toLowerCase();
+
+  items.forEach(item => {
+    const dest = item.dataset.destination;
+    item.style.display = dest.includes(searchTerm) ? 'flex' : 'none';
+  });
+}
+
 
 // Logout
 window.logoutAdmin = function () {
