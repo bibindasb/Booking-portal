@@ -102,12 +102,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   }
 });
 
+// Update loadDashboard to use filters
 async function loadDashboard() {
   showLoader(true);
   try {
     await Promise.all([
       refreshAdminConfig(),
-      loadBookings()
+      loadBookings() // Load with current filters (today's date)
     ]);
   } catch (err) {
     console.error('Dashboard loading failed:', err);
@@ -118,9 +119,20 @@ async function loadDashboard() {
 
 async function loadBookings() {
   try {
-    const res = await fetch('/api/bookings', {
+    const location = document.getElementById('bookingFilterLocation').value;
+    const dateInput = document.getElementById('bookingFilterDate').value;
+    
+    // Convert to ISO format (YYYY-MM-DD)
+    const isoDate = dateInput ? new Date(dateInput).toISOString().split('T')[0] : '';
+
+    const params = new URLSearchParams();
+    if (location) params.append('location', location);
+    if (isoDate) params.append('date', isoDate);
+
+    const res = await fetch(`/api/bookings?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    
     if (!res.ok) throw new Error('Failed to fetch bookings');
     const bookings = await res.json();
     renderBookings(bookings);
@@ -447,6 +459,16 @@ window.adminUpdateBooking = async (id, status) => {
   }
 };
 
+// Initialize date filter to today when dashboard loads
+document.addEventListener('DOMContentLoaded', () => {
+  const dateInput = document.getElementById('bookingFilterDate');
+  if (dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+  }
+});
+
+
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize destination filters
   const initDestinationFilters = () => {
@@ -459,6 +481,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     });
+  };
+
+  window.filterBookings = function() {
+    loadBookings();
   };
 
   // Initial call

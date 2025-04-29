@@ -135,8 +135,27 @@ app.put('/api/bookings/:id/status', authenticateUser, async (req, res) => {
 app.get('/api/bookings', authenticateUser, async (req, res) => {
   try {
     const { location, date } = req.query;
-    const employeeId = req.user.userId;
-    const bookings = await bookingService.getBookings({ employeeId, location, date });
+    const filter = {};
+
+    if (!req.user.isAdmin) filter.employeeId = req.user.userId;
+    if (location) filter.location = location;
+
+    if (date) {
+      // Parse date in UTC
+      const startDate = new Date(date);
+      startDate.setUTCHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setUTCHours(23, 59, 59, 999);
+
+      // Use UTC dates for query
+      filter.travelDate = { 
+        $gte: startDate.toISOString(),
+        $lte: endDate.toISOString()
+      };
+    }
+
+    const bookings = await Booking.find(filter).lean();
     res.json(bookings);
   } catch (error) {
     console.error('Fetch Bookings Error:', error);
@@ -173,6 +192,7 @@ app.get('/test-email', async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
 
 // ========================
 // Static Frontend Pages

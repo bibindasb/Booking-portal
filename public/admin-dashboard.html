@@ -162,12 +162,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Bangalore -->
         <div>
+          <h3 class="font-bold mb-2">Bangalore Destinations</h3>
           <input 
   type="text" 
   id="searchBangalore"
   placeholder="Search destinations..."
   class="w-full border rounded-md px-3 py-2 mb-2"/>
-          <h3 class="font-medium mb-2">Bangalore Destinations</h3>
           <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="bangaloreDestinationsList"></div>
           <div class="flex gap-2">
             <input type="text" id="newBangaloreDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
@@ -178,12 +178,13 @@
         </div>
         <!-- Mumbai -->
         <div>
+          <h3 class="font-bold mb-2">Mumbai Destinations</h3>
           <input 
   type="text" 
   id="searchMumbai"
   placeholder="Search destinations..."
   class="w-full border rounded-md px-3 py-2 mb-2"/>
-          <h3 class="font-medium mb-2">Mumbai Destinations</h3>
+          
           <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="mumbaiDestinationsList"></div>
           <div class="flex gap-2">
             <input type="text" id="newMumbaiDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
@@ -209,7 +210,10 @@
           <option value="mumbai">Mumbai</option>
         </select>
 
-        <input type="date" id="bookingFilterDate" class="border rounded-lg px-3 py-2 min-w-[180px]"/>
+        <input 
+  type="date" 
+  id="bookingFilterDate" 
+  class="border rounded-lg px-3 py-2 min-w-[180px]">
 
         <button onclick="filterBookings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           <i class="fas fa-filter mr-2"></i> Filter
