@@ -46,6 +46,69 @@
     .animate-fade-in-up {
       animation: fadeInUp 0.8s ease-out;
     }
+
+    /* Loading spinner styles */
+    .btn-spinner {
+      display: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast notification styles */
+    .toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 9999;
+      background-color: white;
+      border-left: 4px solid;
+      padding: 1rem 1.25rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 250px;
+      max-width: 360px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .toast-success {
+      border-color: #22c55e;
+      background-color: #ecfdf5;
+      color: #16a34a;
+    }
+
+    .toast-error {
+      border-color: #ef4444;
+      background-color: #fef2f2;
+      color: #dc2626;
+    }
+
+    .toast-info {
+      border-color: #0ea5e9;
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
   </style>
   <script>
     tailwind.config = {
@@ -133,11 +196,12 @@
         </div>
       </div>
 
-      <button type="submit" 
+      <button type="submit" id="loginButton"
               class="w-full bg-gradient-to-r from-primary to-red-500 hover:from-red-600 hover:to-primary text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 
-                     transform hover:scale-[1.02] shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 group">
-        <span class="inline-block group-hover:translate-x-2 transition-transform">Sign In</span>
-        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                     transform hover:scale-[1.02] shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 group relative">
+        <span id="loginText" class="inline-block group-hover:translate-x-2 transition-transform">Sign In</span>
+        <i id="loginIcon" class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+        <div id="loginSpinner" class="btn-spinner absolute right-4 top-1/2 transform -translate-y-1/2"></div>
       </button>
     </form>
 
@@ -151,6 +215,66 @@
     </div>
   </div>
 
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Show loading state
+      const loginButton = document.getElementById('loginButton');
+      const loginText = document.getElementById('loginText');
+      const loginIcon = document.getElementById('loginIcon');
+      const loginSpinner = document.getElementById('loginSpinner');
+      
+      loginButton.disabled = true;
+      loginText.textContent = 'Authenticating...';
+      loginIcon.style.display = 'none';
+      loginSpinner.style.display = 'block';
+      
+      // Simulate authentication delay (replace with actual auth call)
+      setTimeout(() => {
+        // This is where you would normally make your authentication API call
+        // For demonstration, we're just simulating a delay
+        
+        // Hide loading state
+        loginButton.disabled = false;
+        loginText.textContent = 'Sign In';
+        loginIcon.style.display = 'inline-block';
+        loginSpinner.style.display = 'none';
+        
+        // Show toast notification (success or error based on response)
+        showToast('Authentication successful! Redirecting...', 'success');
+        
+        // In a real app, you would redirect on success or show error
+        // window.location.href = '/dashboard.html';
+        
+      }, 2000); // Simulate 2 second delay
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <i class="fas ${
+          type === 'success' ? 'fa-check-circle' :
+          type === 'error' ? 'fa-times-circle' :
+          'fa-info-circle'
+        }"></i>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 4000);
+    }
+  </script>
+  
   <script src="/js/auth.js"></script>
 </body>
 </html>
