@@ -44,6 +44,81 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .admin-toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 9999;
+      background-color: white;
+      border-left: 4px solid;
+      padding: 1rem 1.25rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 250px;
+      max-width: 360px;
+      animation: slideIn 0.3s ease-out;
+    }
+  
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  
+    .toast-success {
+      border-color: #22c55e;
+      background-color: #ecfdf5;
+      color: #16a34a;
+    }
+  
+    .toast-error {
+      border-color: #ef4444;
+      background-color: #fef2f2;
+      color: #dc2626;
+    }
+  
+    .toast-info {
+      border-color: #0ea5e9;
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem 0.5rem 0 0;
+      background-color: #f3f4f6;
+      color: #6b7280;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button:hover {
+      background-color: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .tab-button.active {
+      background-color: #ffffff;
+      color: #3b82f6;
+      border-bottom: 3px solid #3b82f6;
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -66,246 +141,228 @@
         <i class="fas fa-sign-out-alt mr-2"></i>Logout
       </button>
     </div>
-    <style>
-      .admin-toast {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        z-index: 9999;
-        background-color: white;
-        border-left: 4px solid;
-        padding: 1rem 1.25rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        min-width: 250px;
-        max-width: 360px;
-        animation: slideIn 0.3s ease-out;
-      }
-    
-      @keyframes slideIn {
-        from {
-          opacity: 0;
-          transform: translateX(100%);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
-      }
-    
-      .toast-success {
-        border-color: #22c55e;
-        background-color: #ecfdf5;
-        color: #16a34a;
-      }
-    
-      .toast-error {
-        border-color: #ef4444;
-        background-color: #fef2f2;
-        color: #dc2626;
-      }
-    
-      .toast-info {
-        border-color: #0ea5e9;
-        background-color: #e0f2fe;
-        color: #0369a1;
-      }
-    </style>
   </header>
 
-
-
-  
   <!-- ⚙️ Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+  <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- 🔄 Time Slot Management -->
-    <section class="config-section bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold mb-4 flex items-center text-blue-700">
-        <i class="fas fa-clock text-blue-500 mr-2"></i>
-        Time Slot Management
-      </h2>
+    <!-- Tab Navigation -->
+    <div class="flex space-x-1 mb-6 border-b border-gray-200">
+      <button class="tab-button active" onclick="switchTab('time-slots')">
+        <i class="fas fa-clock mr-2"></i>Time Slots
+      </button>
+      <button class="tab-button" onclick="switchTab('destinations')">
+        <i class="fas fa-map-marker-alt mr-2"></i>Destinations
+      </button>
+      <button class="tab-button" onclick="switchTab('bookings')">
+        <i class="fas fa-calendar-check mr-2"></i>Bookings
+      </button>
+      <button class="tab-button" onclick="switchTab('reports')">
+        <i class="fas fa-file-csv mr-2"></i>Reports
+      </button>
+      <button class="tab-button" onclick="switchTab('audit-logs')">
+        <i class="fas fa-clipboard-list mr-2"></i>Audit Logs
+      </button>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Bangalore -->
-        <div>
-          <h3 class="font-medium mb-2">Bangalore Slots</h3>
-          <div id="bangaloreTimeSlotsList" class="flex flex-wrap gap-2 mb-3"></div>
-          <div class="flex gap-2 items-center">
-            <input type="time" id="newBangaloreTime" class="w-full border rounded-md px-3 py-2" />
-            <button onclick="addTimeSlot('bangalore')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              <i class="fas fa-plus mr-1"></i> Add
+    <!-- Tab Contents -->
+    <div class="space-y-8">
+
+      <!-- Time Slots Tab -->
+      <div id="time-slots" class="tab-content active">
+        <section class="config-section bg-white p-6 rounded-xl shadow">
+          <h2 class="text-lg font-semibold mb-4 flex items-center text-blue-700">
+            <i class="fas fa-clock text-blue-500 mr-2"></i>
+            Time Slot Management
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Bangalore -->
+            <div>
+              <h3 class="font-medium mb-2">Bangalore Slots</h3>
+              <div id="bangaloreTimeSlotsList" class="flex flex-wrap gap-2 mb-3"></div>
+              <div class="flex gap-2 items-center">
+                <input type="time" id="newBangaloreTime" class="w-full border rounded-md px-3 py-2" />
+                <button onclick="addTimeSlot('bangalore')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  <i class="fas fa-plus mr-1"></i> Add
+                </button>
+              </div>
+            </div>
+            <!-- Mumbai -->
+            <div>
+              <h3 class="font-medium mb-2">Mumbai Slots</h3>
+              <div id="mumbaiTimeSlotsList" class="flex flex-wrap gap-2 mb-3"></div>
+              <div class="flex gap-2 items-center">
+                <input type="time" id="newMumbaiTime" class="w-full border rounded-md px-3 py-2" />
+                <button onclick="addTimeSlot('mumbai')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                  <i class="fas fa-plus mr-1"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Destinations Tab -->
+      <div id="destinations" class="tab-content">
+        <section class="config-section bg-white p-6 rounded-xl shadow">
+          <h2 class="text-lg font-semibold mb-4 flex items-center text-green-700">
+            <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>
+            Destination Management
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Bangalore -->
+            <div>
+              <h3 class="font-bold mb-2">Bangalore Destinations</h3>
+              <input 
+                type="text" 
+                id="searchBangalore"
+                placeholder="Search destinations..."
+                class="w-full border rounded-md px-3 py-2 mb-2"/>
+              <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="bangaloreDestinationsList"></div>
+              <div class="flex gap-2">
+                <input type="text" id="newBangaloreDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
+                <button onclick="addDestination('bangalore')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+            <!-- Mumbai -->
+            <div>
+              <h3 class="font-bold mb-2">Mumbai Destinations</h3>
+              <input 
+                type="text" 
+                id="searchMumbai"
+                placeholder="Search destinations..."
+                class="w-full border rounded-md px-3 py-2 mb-2"/>
+              
+              <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="mumbaiDestinationsList"></div>
+              <div class="flex gap-2">
+                <input type="text" id="newMumbaiDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
+                <button onclick="addDestination('mumbai')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Bookings Tab -->
+      <div id="bookings" class="tab-content">
+        <section class="config-section bg-white p-6 rounded-xl shadow">
+          <h2 class="text-lg font-semibold mb-4 flex items-center text-purple-700">
+            <i class="fas fa-calendar-check text-purple-500 mr-2"></i>
+            Booking Management
+          </h2>
+
+          <div class="flex gap-3 flex-wrap mb-4">
+            <select id="bookingFilterLocation" class="flex-1 border rounded-lg px-3 py-2 min-w-[200px]">
+              <option value="">All Locations</option>
+              <option value="bangalore">Bangalore</option>
+              <option value="mumbai">Mumbai</option>
+            </select>
+
+            <input 
+              type="date" 
+              id="bookingFilterDate" 
+              class="border rounded-lg px-3 py-2 min-w-[180px]">
+
+            <button onclick="filterBookings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <i class="fas fa-filter mr-2"></i> Filter
             </button>
           </div>
-        </div>
-        <!-- Mumbai -->
-        <div>
-          <h3 class="font-medium mb-2">Mumbai Slots</h3>
-          <div id="mumbaiTimeSlotsList" class="flex flex-wrap gap-2 mb-3"></div>
-          <div class="flex gap-2 items-center">
-            <input type="time" id="newMumbaiTime" class="w-full border rounded-md px-3 py-2" />
-            <button onclick="addTimeSlot('mumbai')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              <i class="fas fa-plus mr-1"></i> Add
+
+          <div id="adminBookingsList" class="space-y-3">
+            <!-- Booking cards will render here -->
+          </div>
+        </section>
+      </div>
+
+      <!-- Reports Tab -->
+      <div id="reports" class="tab-content">
+        <section class="config-section bg-white p-6 rounded-xl shadow">
+          <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800">
+            <i class="fas fa-file-csv text-yellow-500 mr-2"></i>
+            Booking Reports
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Filter by Location</label>
+              <select id="reportLocation" class="w-full border rounded-lg px-3 py-2">
+                <option value="">All Locations</option>
+                <option value="bangalore">Bangalore</option>
+                <option value="mumbai">Mumbai</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Filter by Date</label>
+              <input type="date" id="reportDate" class="w-full border rounded-lg px-3 py-2" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Email Recipient</label>
+              <input type="email" id="reportEmail" placeholder="Enter email address" class="w-full border rounded-lg px-3 py-2" />
+            </div>
+          </div>
+
+          <div class="flex gap-4 mt-6">
+            <button onclick="generateReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+              <i class="fas fa-download mr-2"></i> Download CSV
+            </button>
+            <button onclick="emailReport()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <i class="fas fa-paper-plane mr-2"></i> Email Report
             </button>
           </div>
-        </div>
+        </section>
       </div>
-    </section>
 
-    <!-- 📍 Destination Management -->
-    <section class="config-section bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold mb-4 flex items-center text-green-700">
-        <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>
-        Destination Management
-      </h2>
+      <!-- Audit Logs Tab -->
+      <div id="audit-logs" class="tab-content">
+        <section class="config-section bg-white p-6 rounded-xl shadow">
+          <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800">
+            <i class="fas fa-clipboard-list text-blue-500 mr-2"></i>
+            Audit Logs
+          </h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Bangalore -->
-        <div>
-          <h3 class="font-bold mb-2">Bangalore Destinations</h3>
-          <input 
-  type="text" 
-  id="searchBangalore"
-  placeholder="Search destinations..."
-  class="w-full border rounded-md px-3 py-2 mb-2"/>
-          <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="bangaloreDestinationsList"></div>
-          <div class="flex gap-2">
-            <input type="text" id="newBangaloreDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
-            <button onclick="addDestination('bangalore')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-              <i class="fas fa-plus"></i> Add
-            </button>
+          <div class="mb-4 flex gap-4">
+            <input type="text" id="logSearch" placeholder="Search logs..." 
+                  class="border rounded-lg px-3 py-2 flex-1">
+            <select id="logTypeFilter" class="border rounded-lg px-3 py-2">
+              <option value="">All Actions</option>
+              <option value="login">Logins</option>
+              <option value="config_update">Config Changes</option>
+              <option value="booking_update">Booking Changes</option>
+            </select>
           </div>
-        </div>
-        <!-- Mumbai -->
-        <div>
-          <h3 class="font-bold mb-2">Mumbai Destinations</h3>
-          <input 
-  type="text" 
-  id="searchMumbai"
-  placeholder="Search destinations..."
-  class="w-full border rounded-md px-3 py-2 mb-2"/>
-          
-          <div class="space-y-2 mb-3 overflow-y-auto max-h-64" id="mumbaiDestinationsList"></div>
-          <div class="flex gap-2">
-            <input type="text" id="newMumbaiDestination" placeholder="New destination" class="w-full border rounded-md px-3 py-2" />
-            <button onclick="addDestination('mumbai')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-              <i class="fas fa-plus"></i> Add
-            </button>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-2 text-left">Timestamp</th>
+                  <th class="px-4 py-2 text-left">User</th>
+                  <th class="px-4 py-2 text-left">Action</th>
+                  <th class="px-4 py-2 text-left">Details</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsList"></tbody>
+            </table>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- 📅 Booking Management -->
-    <section class="config-section bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold mb-4 flex items-center text-purple-700">
-        <i class="fas fa-calendar-check text-purple-500 mr-2"></i>
-        Booking Management
-      </h2>
-
-      <div class="flex gap-3 flex-wrap mb-4">
-        <select id="bookingFilterLocation" class="flex-1 border rounded-lg px-3 py-2 min-w-[200px]">
-          <option value="">All Locations</option>
-          <option value="bangalore">Bangalore</option>
-          <option value="mumbai">Mumbai</option>
-        </select>
-
-        <input 
-  type="date" 
-  id="bookingFilterDate" 
-  class="border rounded-lg px-3 py-2 min-w-[180px]">
-
-        <button onclick="filterBookings()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          <i class="fas fa-filter mr-2"></i> Filter
-        </button>
+          <div class="mt-4 flex justify-between items-center">
+            <button onclick="loadMoreLogs()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+              Load More
+            </button>
+            <span id="logPaginationInfo" class="text-sm text-gray-600"></span>
+          </div>
+        </section>
       </div>
 
-      <div id="adminBookingsList" class="space-y-3">
-        <!-- Booking cards will render here -->
-      </div>
-    </section>
-
-    <!-- 📊 Report Generation -->
-    <section class="config-section bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800">
-        <i class="fas fa-file-csv text-yellow-500 mr-2"></i>
-        Booking Reports
-      </h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-2">Filter by Location</label>
-          <select id="reportLocation" class="w-full border rounded-lg px-3 py-2">
-            <option value="">All Locations</option>
-            <option value="bangalore">Bangalore</option>
-            <option value="mumbai">Mumbai</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-2">Filter by Date</label>
-          <input type="date" id="reportDate" class="w-full border rounded-lg px-3 py-2" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-2">Email Recipient</label>
-          <input type="email" id="reportEmail" placeholder="Enter email address" class="w-full border rounded-lg px-3 py-2" />
-        </div>
-      </div>
-
-      <div class="flex gap-4 mt-6">
-        <button onclick="generateReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-          <i class="fas fa-download mr-2"></i> Download CSV
-        </button>
-        <button onclick="emailReport()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          <i class="fas fa-paper-plane mr-2"></i> Email Report
-        </button>
-      </div>
-    </section>
-
-    <!-- Add to main content section -->
-<section class="config-section bg-white p-6 rounded-xl shadow">
-  <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800">
-    <i class="fas fa-clipboard-list text-blue-500 mr-2"></i>
-    Audit Logs
-  </h2>
-
-  <div class="mb-4 flex gap-4">
-    <input type="text" id="logSearch" placeholder="Search logs..." 
-           class="border rounded-lg px-3 py-2 flex-1">
-    <select id="logTypeFilter" class="border rounded-lg px-3 py-2">
-      <option value="">All Actions</option>
-      <option value="login">Logins</option>
-      <option value="config_update">Config Changes</option>
-      <option value="booking_update">Booking Changes</option>
-    </select>
-  </div>
-
-  <div class="overflow-x-auto">
-    <table class="w-full">
-      <thead>
-        <tr class="bg-gray-50">
-          <th class="px-4 py-2 text-left">Timestamp</th>
-          <th class="px-4 py-2 text-left">User</th>
-          <th class="px-4 py-2 text-left">Action</th>
-          <th class="px-4 py-2 text-left">Details</th>
-        </tr>
-      </thead>
-      <tbody id="auditLogsList"></tbody>
-    </table>
-  </div>
-
-  <div class="mt-4 flex justify-between items-center">
-    <button onclick="loadMoreLogs()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
-      Load More
-    </button>
-    <span id="logPaginationInfo" class="text-sm text-gray-600"></span>
-  </div>
-</section>
-
+    </div>
   </main>
 
   <script src="/js/admin.js"></script>
@@ -314,28 +371,48 @@
       localStorage.removeItem('adminToken');
       window.location.href = 'admin.html';
     }
-  function showAdminToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `admin-toast toast-${type}`;
-    toast.innerHTML = `
-      <i class="fas ${
-        type === 'success' ? 'fa-check-circle' :
-        type === 'error' ? 'fa-times-circle' :
-        'fa-info-circle'
-      }"></i>
-      <span>${message}</span>
-    `;
 
-    document.body.appendChild(toast);
+    function showAdminToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `admin-toast toast-${type}`;
+      toast.innerHTML = `
+        <i class="fas ${
+          type === 'success' ? 'fa-check-circle' :
+          type === 'error' ? 'fa-times-circle' :
+          'fa-info-circle'
+        }"></i>
+        <span>${message}</span>
+      `;
 
-    setTimeout(() => {
-      toast.style.opacity = 0;
-      toast.style.transform = 'translateX(100%)';
+      document.body.appendChild(toast);
+
       setTimeout(() => {
-        toast.remove();
-      }, 300);
-    }, 4000);
-  }
-</script> 
+        toast.style.opacity = 0;
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 4000);
+    }
+
+    // Tab switching functionality
+    function switchTab(tabId) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Deactivate all tab buttons
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+      });
+
+      // Show the selected tab content
+      document.getElementById(tabId).classList.add('active');
+
+      // Activate the clicked tab button
+      event.currentTarget.classList.add('active');
+    }
+  </script> 
 </body>
 </html>
