@@ -116,6 +116,9 @@
     </style>
   </header>
 
+
+
+  
   <!-- ⚙️ Main Content -->
   <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
@@ -262,6 +265,46 @@
         </button>
       </div>
     </section>
+
+    <!-- Add to main content section -->
+<section class="config-section bg-white p-6 rounded-xl shadow">
+  <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800">
+    <i class="fas fa-clipboard-list text-blue-500 mr-2"></i>
+    Audit Logs
+  </h2>
+
+  <div class="mb-4 flex gap-4">
+    <input type="text" id="logSearch" placeholder="Search logs..." 
+           class="border rounded-lg px-3 py-2 flex-1">
+    <select id="logTypeFilter" class="border rounded-lg px-3 py-2">
+      <option value="">All Actions</option>
+      <option value="login">Logins</option>
+      <option value="config_update">Config Changes</option>
+      <option value="booking_update">Booking Changes</option>
+    </select>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-4 py-2 text-left">Timestamp</th>
+          <th class="px-4 py-2 text-left">User</th>
+          <th class="px-4 py-2 text-left">Action</th>
+          <th class="px-4 py-2 text-left">Details</th>
+        </tr>
+      </thead>
+      <tbody id="auditLogsList"></tbody>
+    </table>
+  </div>
+
+  <div class="mt-4 flex justify-between items-center">
+    <button onclick="loadMoreLogs()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+      Load More
+    </button>
+    <span id="logPaginationInfo" class="text-sm text-gray-600"></span>
+  </div>
+</section>
 
   </main>
 

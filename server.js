@@ -2,14 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-
 const app = express();
 
 // Database and Models
 const { connectDB } = require('./models/db');
 const { Booking } = require('./models/Booking');
 const { LocationConfig, initializeDefaultConfigs } = require('./models/LocationConfig');
+const AuditLog = require('./models/AuditLog');
 
 // Services
 const bookingService = require('./services/bookingService');
@@ -19,6 +18,7 @@ const { scheduleBookingReport, rescheduleExistingBookings } = require('./utils/s
 
 // Auth utilities
 const { authenticateUser, authenticateAdmin, generateToken, verifyToken } = require('./utils/auth');
+const { authenticateADUser, isUserInGroup } = require('./utils/adAuth');
 
 // Middleware
 app.use(cors());
@@ -35,35 +35,90 @@ const ADMIN_CREDS = {
 // Routes
 // ========================
 
-// Authentication Route
+// Modified login handler
 app.post('/api/login', async (req, res) => {
-  const { username, password, isAdmin } = req.body;
+  const { username, password } = req.body;
+
   try {
-    if (isAdmin) {
-      if (username === ADMIN_CREDS.username && password === ADMIN_CREDS.password) {
-        const token = generateToken(username, true);
-        return res.json({ success: true, token, isAdmin: true });
-      } else {
-        return res.status(401).json({ error: 'Invalid admin credentials' });
-      }
-    } else {
-      if (username && password) {
-        const token = generateToken(username); // username = employeeId
-        return res.json({ success: true, token });
-      }
+    // Check if user is the local admin
+    if (
+      username === ADMIN_CREDS.username &&
+      password === ADMIN_CREDS.password
+    ) {
+      const token = generateToken(username, true); // local admin is always an admin
+      const log = new AuditLog({
+        user: username,
+        action: 'login',
+        details: { isAdmin: true, method: 'local' },
+      });
+      await log.save();
+      return res.json({
+        success: true,
+        token,
+        isAdmin: true,
+        username,
+      });
+    }
+
+    // Otherwise use AD authentication
+    const authResult = await authenticateADUser(username, password);
+    if (!authResult) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    const isAdmin = await isUserInGroup(username, process.env.AD_ADMIN_GROUP);
+
+    const log = new AuditLog({
+      user: username,
+      action: 'login',
+      details: { isAdmin, method: 'active_directory' },
+    });
+    await log.save();
+
+    const token = generateToken(username, isAdmin);
+    res.json({
+      success: true,
+      token,
+      isAdmin,
+      username,
+    });
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({ error: 'Authentication error' });
   }
 });
 
+
+// Test command for direct authentication
+app.post('/api/test-auth', async (req, res) => {
+  const { username, password } = req.body;
+  
+  ad.authenticate(username, password, (err) => {
+    if (err) return res.status(401).json({ error: err.message });
+    res.json({ success: true });
+  });
+});
+
+
 // Verify Admin Token
 app.get('/api/verify-token', authenticateAdmin, (req, res) => {
   res.json({ isAdmin: true });
 });
 
+async function logAction(req, action, details = {}) {
+  if (!req.user) return;
+  
+  const log = new AuditLog({
+    user: req.user.userId,
+    action,
+    target: req.originalUrl,
+    details
+  });
+  
+  await log.save();
+}
+
+// Config endpoints
 // Config endpoints
 app.get('/api/config', async (req, res) => {
   try {
@@ -87,14 +142,50 @@ app.post('/api/config', authenticateAdmin, async (req, res) => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     
+    await logAction(req, 'config_update', {
+      location,
+      changes: { timeSlots, destinations }
+    });
+
     res.json(updatedConfig);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update configuration' });
   }
 });
 
+
+// Audit endpoint
+app.get('/api/audit-logs', authenticateAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, action, search } = req.query;
+    const filter = {};
+
+    if (action) filter.action = action;
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      filter.$or = [
+        { user: regex },
+        { action: regex },
+        { target: regex }
+      ];
+    }
+
+    const logs = await AuditLog.find(filter)
+      .sort({ timestamp: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const total = await AuditLog.countDocuments(filter);
+    res.json({ total, logs });
+
+  } catch (err) {
+    console.error('Audit log fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+});
+
 // Booking endpoints
-// POST Create Booking
 app.post('/api/bookings', authenticateUser, async (req, res) => {
   try {
     const booking = await bookingService.createBooking(req.body);

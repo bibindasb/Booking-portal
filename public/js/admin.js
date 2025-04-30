@@ -197,6 +197,26 @@ window.removeTimeSlot = async (location, index) => {
   }
 };
 
+document.addEventListener('DOMContentLoaded', () => {
+  const filter = document.getElementById('logTypeFilter');
+  const search = document.getElementById('logSearch');
+  
+  if (filter) {
+    filter.addEventListener('change', () => {
+      loadAuditLogs(); // Reload logs with selected filter
+    });
+  }
+
+  if (search) {
+    search.addEventListener('input', () => {
+      loadAuditLogs();
+    });
+  }
+
+  // Initial load
+  loadAuditLogs();
+});
+
 // Capture add-destination
 window.addDestination = async (location) => {
   const inputId = `new${capitalize(location)}Destination`;
@@ -504,6 +524,109 @@ function filterDestinations(location, query) {
   });
 }
 
+let currentLogPage = 1;
+let totalLogs = 0;
+
+async function loadAuditLogs(search = '', actionFilter = '') {
+  showLoader(true);
+  try {
+    const params = new URLSearchParams({
+      page: currentLogPage,
+      limit: 50,
+      ...(search && { search }),
+      ...(actionFilter && { action: actionFilter })
+    });
+
+    const res = await fetch(`/api/audit-logs?${params}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    const { total, page, logs } = await res.json();
+    totalLogs = total;
+    renderAuditLogs(logs);
+    updatePaginationInfo();
+
+  } catch (err) {
+    showAdminAlert('Failed to load logs', 'error');
+  } finally {
+    showLoader(false);
+  }
+}
+
+async function loadAuditLogs(page = 1, limit = 50) {
+  const action = document.getElementById('logTypeFilter')?.value || '';
+  const search = document.getElementById('logSearch')?.value.trim();
+  const queryParams = new URLSearchParams({ page, limit });
+
+  if (action) queryParams.append('action', action);
+  if (search) queryParams.append('search', search);
+
+  try {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`/api/audit-logs?${queryParams.toString()}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    const tbody = document.getElementById('auditLogsList');
+    tbody.innerHTML = '';
+
+    if (data.logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No logs found</td></tr>';
+    } else {
+      for (const log of data.logs) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-4 py-2">${new Date(log.timestamp).toLocaleString()}</td>
+          <td class="px-4 py-2">${log.user}</td>
+          <td class="px-4 py-2">${log.action}</td>
+          <td class="px-4 py-2">${JSON.stringify(log.details)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    document.getElementById('logPaginationInfo').textContent =
+      `Showing ${data.logs.length} of ${data.total} log entries`;
+
+  } catch (err) {
+    console.error('Failed to load audit logs', err);
+  }
+}
+
+function renderAuditLogs(logs) {
+  const container = document.getElementById('auditLogsList');
+  container.innerHTML = logs.map(log => `
+    <tr class="border-t">
+      <td class="px-4 py-2">${new Date(log.timestamp).toLocaleString()}</td>
+      <td class="px-4 py-2">${log.user}</td>
+      <td class="px-4 py-2 capitalize">${log.action.replace('_', ' ')}</td>
+      <td class="px-4 py-2 max-w-xs truncate">
+        ${JSON.stringify(log.details || {})}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updatePaginationInfo() {
+  const info = document.getElementById('logPaginationInfo');
+  const showing = currentLogPage * 50;
+  info.textContent = `Showing ${showing > totalLogs ? totalLogs : showing} of ${totalLogs} logs`;
+}
+
+window.loadMoreLogs = function() {
+  currentLogPage++;
+  loadAuditLogs();
+};
+
+// Add to DOMContentLoaded event listener
+document.getElementById('logSearch').addEventListener('input', (e) => {
+  loadAuditLogs(e.target.value, document.getElementById('logTypeFilter').value);
+});
+
+document.getElementById('logTypeFilter').addEventListener('change', (e) => {
+  loadAuditLogs(document.getElementById('logSearch').value, e.target.value);
+});
 
 // Logout
 window.logoutAdmin = function () {
