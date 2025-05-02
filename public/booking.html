@@ -7,11 +7,27 @@
   <link rel="stylesheet" href="/dist/output.css">
   <link rel="stylesheet" href="/fontawesome/css/all.min.css">
   <style>
-    
+    /* Fade-in animation for welcome banner */
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-banner.animate {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
+      animation: fadeIn 0.8s ease-out forwards;
     }
-    
+
     .time-slot { 
       transition: all 0.3s ease;
       border-width: 1px;
@@ -92,18 +108,176 @@
     }
     
     .booking-card {
-      transition: all 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      transform-origin: center;
+      opacity: 0;
     }
     
     .booking-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* New styles for compact layout */
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(99, 102, 241, 0.8) 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: white;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .compact-container {
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .collapsible {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .collapsible.show {
+      max-height: 1000px;
+    }
+
+    .toggle-bookings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1rem;
+      cursor: pointer;
+      color: #3b82f6;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .toggle-bookings i {
+      transition: transform 0.3s ease;
+      margin-left: 0.5rem;
+    }
+
+    .toggle-bookings.active i {
+      transform: rotate(180deg);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .welcome-banner,
+      .compact-container {
+        max-width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    /* New Animation Styles */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .compact-container > * {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .compact-container > *:nth-child(1) { animation-delay: 0.1s; }
+    .compact-container > *:nth-child(2) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    button[type="submit"]:hover {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes modalIn {
+      0% { 
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+      100% { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    #confirmationModal > div {
+      animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    select {
+      transition: all 0.3s ease;
+    }
+
+    select:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes checkmarkBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    #confirmationModal .fa-check {
+      animation: checkmarkBounce 0.6s ease 0.3s both;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+    }
+
+    button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+    }
+
+    button:focus:not(:active)::after {
+      animation: ripple 0.6s ease-out;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #global-loader div {
+      animation: spin 1s linear infinite;
     }
   </style>
 </head>
 <body class="min-h-screen font-sans bg-cover bg-no-repeat bg-center text-dark" style="background-image: url('/assets/background.jpg');">
   <!-- Background overlay with gradient -->
   <div id="global-loader" class="fixed inset-0 bg-white bg-opacity-60 backdrop-blur-sm z-50 hidden flex items-center justify-center">
-    <div class="border-4 border-gray-200 border-t-blue-600 rounded-full w-12 h-12 animate-spin"></div>
+    <div class="border-4 border-gray-200 border-t-blue-600 rounded-full w-12 h-12"></div>
   </div>
   <div class="fixed inset-0 bg-gradient-to-br from-black/30 to-black/70 backdrop-blur-sm z-0"></div>
 
@@ -111,11 +285,11 @@
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <div class="flex items-center">
         <img 
-        src="/assets/media.png" 
-        alt="Company Logo" 
-        class="h-14 object-contain"  <!-- Adjust height as needed -->
-      
-    </div>
+          src="/assets/media.png" 
+          alt="Company Logo" 
+          class="h-14 object-contain"
+        />
+      </div>
       <div class="flex items-center space-x-4">
         <div class="bg-blue-100/70 backdrop-blur-md text-blue-800 px-4 py-2 rounded-full text-sm font-medium shadow-sm flex items-center">
           <i class="fas fa-location-dot mr-2"></i>
@@ -128,85 +302,105 @@
     </div>
   </header>
 
-  <main class="relative z-10 max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-    <!-- Booking Form (Left side) -->
-    <div class="lg:col-span-2">
-      <div class="glass-morphism shadow-2xl overflow-hidden">
-        <div class="border-b border-white/20 px-6 py-5 backdrop-blur-sm bg-white/5">
-          <h2 class="text-xl font-semibold text-white flex items-center">
-            <i class="fas fa-calendar-alt text-blue-400 mr-3"></i>
+  <main class="relative z-10 px-4 py-8">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner glass-morphism">
+      <h1 class="text-xl font-bold mb-1" id="welcomeMessage">Welcome, User!</h1>
+      <p id="dailyMoodMsg" class="text-white/90 text-sm mt-2 italic flex items-center">
+        <i class="fas fa-smile-wink text-yellow-300 mr-2"></i>
+        <span id="dailyMoodText">Loading today's message...</span>
+      </p>
+    </div>
+
+    <!-- Booking Form (Compact) -->
+    <div class="compact-container">
+      <div class="glass-morphism shadow-2xl overflow-hidden mb-6">
+        <div class="border-b border-white/20 px-4 py-3 backdrop-blur-sm bg-white/5">
+          <h2 class="text-lg font-semibold text-white flex items-center">
+            <i class="fas fa-calendar-alt text-blue-400 mr-2 text-sm"></i>
             Book Your Cab
           </h2>
         </div>
-        <div class="p-8 text-white">
-          <form id="bookingForm" class="space-y-8">
+        <div class="p-5 text-white">
+          <form id="bookingForm" class="space-y-4">
             <!-- Destination -->
             <div>
-              <label class="block text-sm font-medium mb-2 flex items-center">
-                <i class="fas fa-map-marker-alt text-blue-400 mr-2"></i>
+              <label class="block text-xs font-medium mb-1 flex items-center">
+                <i class="fas fa-map-marker-alt text-blue-400 mr-1 text-sm"></i>
                 Destination
               </label>
               <div class="relative">
                 <select id="destination" required
-                  class="block w-full pl-4 pr-10 py-3 text-base border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
+                  class="block w-full pl-3 pr-8 py-2 text-sm border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
                   <option value="">Select your destination</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <i class="fas fa-chevron-down text-blue-300"></i>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-blue-300 text-xs"></i>
                 </div>
               </div>
             </div>
 
-<!-- With this single dropdown -->
-<div>
-  <label class="block text-sm font-medium mb-2 flex items-center">
-    <i class="fas fa-calendar-alt text-blue-400 mr-2"></i>
-    Select Date & Time
-  </label>
-  <div class="relative">
-    <select id="dateTimeSlot" required
-      class="block w-full pl-4 pr-10 py-3 text-base border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
-      <option value="">Select date and time</option>
-    </select>
-    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-      <i class="fas fa-chevron-down text-blue-300"></i>
-    </div>
-  </div>
-</div>
+            <!-- Date & Time Dropdown -->
+            <div>
+              <label class="block text-xs font-medium mb-1 flex items-center">
+                <i class="fas fa-calendar-alt text-blue-400 mr-1 text-sm"></i>
+                Select Date & Time
+              </label>
+              <div class="relative">
+                <select id="dateTimeSlot" required
+                  class="block w-full pl-3 pr-8 py-2 text-sm border border-white/20 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 appearance-none bg-gray/10 backdrop-blur-md text-black input-focus-effect transition-all duration-200">
+                  <option value="">Select date and time</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                  <i class="fas fa-chevron-down text-blue-300 text-xs"></i>
+                </div>
+              </div>
+            </div>
 
             <!-- Submit Button -->
-            <div class="pt-4">
+            <div class="pt-2">
               <button type="submit" 
-                class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-4 px-6 rounded-lg shadow-lg transition duration-300 flex items-center justify-center">
-                <i class="fas fa-check-circle mr-2"></i>
+                class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center text-sm">
+                <i class="fas fa-check-circle mr-2 text-xs"></i>
                 Confirm Booking
               </button>
             </div>
           </form>
         </div>
       </div>
-    </div>
 
-    <!-- My Bookings (Right side) -->
-    <div class="glass-morphism p-6 sticky top-20 self-start max-h-[90vh] overflow-y-auto">
-      <h2 class="text-lg font-semibold mb-6 flex items-center text-white">
-        <i class="fas fa-list-check text-blue-400 mr-2"></i> My Bookings
-      </h2>
-      <div id="myBookingsList" class="space-y-4">
-        <!-- User bookings will go here -->
+      <!-- My Bookings (Compact) -->
+      <div class="glass-morphism p-6">
+        <h2 class="text-base font-semibold mb-3 flex items-center text-white">
+          <i class="fas fa-list-check text-blue-400 mr-2 text-sm"></i> My Recent Bookings
+        </h2>
+        <div id="recentBookingsList" class="space-y-3">
+          <!-- Recent bookings will go here (limited to 3) -->
+        </div>
+        <div id="olderBookingsList" class="collapsible space-y-3 mt-3">
+          <!-- Older bookings will go here -->
+        </div>
+        <div id="toggleBookingsBtn" class="toggle-bookings">
+          <span>Show all bookings</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div id="noBookingsMessage" class="text-gray-300 text-center py-3 text-sm hidden">
+          No bookings found
+        </div>
       </div>
     </div>
   </main>
+
   <!-- Confirmation Modal -->
   <div id="confirmationModal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden modal">
-    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-md shadow-2xl transform transition-all">
-      <div class="p-8 text-center">
-        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
-          <i class="fas fa-check text-green-500 text-3xl"></i>
+    <div class="bg-white rounded-xl overflow-hidden w-full max-w-xs shadow-2xl">
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
+          <i class="fas fa-check text-green-500 text-xl"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed!</h3>
-        <div class="bg-gray-50 rounded-xl p-5 mb-6 text-left shadow-inner">
-          <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-gray-800 mb-3">Booking Confirmed!</h3>
+        <div class="bg-gray-50 rounded-lg p-4 mb-4 text-left shadow-inner text-sm">
+          <div class="flex justify-between items-center mb-2">
             <span class="text-gray-600">Destination:</span>
             <span class="font-medium text-gray-900" id="confirmationDestination"></span>
           </div>
@@ -216,7 +410,7 @@
           </div>
         </div>
         <button onclick="closeModal()" 
-               class="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
+               class="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white font-medium py-2 px-4 rounded-lg transition duration-300 text-sm">
           Done
         </button>
       </div>
@@ -229,6 +423,19 @@
       bangalore: { timeSlots: [], destinations: [] },
       mumbai: { timeSlots: [], destinations: [] }
     };
+
+    // Initialize the welcome banner
+    function initWelcomeBanner() {
+      const username = sessionStorage.getItem('username');
+      document.getElementById('welcomeMessage').textContent = `Welcome, ${username || 'User'}!`;
+
+      const banner = document.querySelector('.welcome-banner');
+      if (banner) {
+        banner.classList.remove('animate'); // Reset to allow retriggering
+        void banner.offsetWidth; // Force reflow (hack to retrigger animation if needed)
+        banner.classList.add('animate');
+      }
+    }
 
     // Load configuration from server
     async function loadConfig() {
@@ -249,6 +456,56 @@
       }
     }
 
+    function generateMoodMessage() {
+      const messages = {
+        Sunday: ["It's Sunday! Why are you at work? 🛌"],
+        Monday: [
+          "Congrats! You just survived a Monday! 🎉",
+          "It's OK, Monday is almost over 🙂",
+          "Ouu yeaah!! Monday is over! 🕺",
+          "Chillax! Monday is nearly done 🧘"
+        ],
+        Tuesday: [
+          "Tough Tuesday? You got this! 💪",
+          "Tuesday is almost over — hang in there!",
+          "You survived Tuesday! Bold move 😄",
+          "Tuesday is just Monday's less evil twin 😂"
+        ],
+        Wednesday: [
+          "Halfway there! Happy Wednesday 🐪",
+          "Two more days until the weekend 👏",
+          "You made it through Wednesday 💥",
+          "Relax, it's practically Friday eve 😌"
+        ],
+        Thursday: [
+          "One more day till weekend! 🎉",
+          "It's Thursday — weekend is peeking ⏳",
+          "Keep pushing, you're almost there!",
+          "Just one more alarm until freedom 🙌"
+        ],
+        Friday: [
+          "TGIF! Enjoy the weekend 🎈",
+          "Better days have come. Hello Friday! 😄",
+          "Friday fun incoming 🚗💨",
+          "Time to celebrate — it's Friday 🥳"
+        ],
+        Saturday: ["It's Saturday! Why are you at work? 🌴"]
+      };
+
+      const dayIndex = new Date().getDay(); // 0-6
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const dayName = days[dayIndex];
+      const todayMsgs = messages[dayName];
+      const randomMsg = todayMsgs[Math.floor(Math.random() * todayMsgs.length)];
+
+      const msgSpan = document.getElementById('dailyMoodText');
+      if (msgSpan) {
+        msgSpan.textContent = randomMsg;
+      } else {
+        console.warn('dailyMoodText span not found!');
+      }
+    }
+
     // Time Calculations
     function parseTime(timeStr) {
       const [time, period] = timeStr.split(' ');
@@ -258,100 +515,102 @@
       return { hours, minutes };
     }
 
-// Replace getAvailableTimeSlots function with:
-function getDateTimeSlots() {
-  const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
-  const now = new Date();
-  const istOptions = { timeZone: 'Asia/Kolkata' };
-  
-  // Create today and tomorrow dates in IST
-  const today = new Date(now.toLocaleString('en-US', istOptions));
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  // Format dates as YYYY-MM-DD
-  const formatDate = (date) => date.toISOString().split('T')[0];
-  
-  // Get all configured time slots
-  const timeSlots = config[location]?.timeSlots || [];
-  
-  // Generate date-time combinations
-  const slots = [];
-  [today, tomorrow].forEach(date => {
-    timeSlots.forEach(time => {
-      const [timePart, period] = time.split(' ');
-      let [hours, minutes] = timePart.split(':').map(Number);
+    function getDateTimeSlots() {
+      const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
+      const now = new Date();
+      const istOptions = { timeZone: 'Asia/Kolkata' };
       
-      // Convert to 24h format
-      if (period === 'PM' && hours < 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
+      // Create today and tomorrow dates in IST
+      const today = new Date(now.toLocaleString('en-US', istOptions));
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
       
-      // Create slot datetime
-      const slotDateTime = new Date(date);
-      slotDateTime.setHours(hours, minutes, 0, 0);
+      // Format dates as YYYY-MM-DD
+      const formatDate = (date) => date.toISOString().split('T')[0];
       
-      // Check cutoff time (3 hours before)
-      const cutoff = new Date(slotDateTime.getTime() - (3 * 60 * 60 * 1000));
+      // Get all configured time slots
+      const timeSlots = config[location]?.timeSlots || [];
       
-      if (now < cutoff) {
-        slots.push({
-          date: formatDate(date),
-          time,
-          datetime: slotDateTime
+      // Generate date-time combinations
+      const slots = [];
+      [today, tomorrow].forEach(date => {
+        timeSlots.forEach(time => {
+          const [timePart, period] = time.split(' ');
+          let [hours, minutes] = timePart.split(':').map(Number);
+          
+          // Convert to 24h format
+          if (period === 'PM' && hours < 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          
+          // Create slot datetime
+          const slotDateTime = new Date(date);
+          slotDateTime.setHours(hours, minutes, 0, 0);
+          
+          // Check cutoff time (3 hours before)
+          const cutoff = new Date(slotDateTime.getTime() - (3 * 60 * 60 * 1000));
+          
+          if (now < cutoff) {
+            slots.push({
+              date: formatDate(date),
+              time,
+              datetime: slotDateTime
+            });
+          }
         });
-      }
-    });
-  });
-  
-  return slots;
-}
+      });
+      
+      return slots;
+    }
 
-// Update the updateBookingInterface function:
-async function updateBookingInterface() {
-  await loadConfig();
-  const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
-  
-  // Update destinations (keep existing code)
-  const destSelect = document.getElementById('destination');
-  destSelect.innerHTML = '<option value="">Select destination</option>';
-  config[location].destinations.forEach(dest => {
-    const option = document.createElement('option');
-    option.value = option.textContent = dest;
-    destSelect.appendChild(option);
-  });
-  
-  // Update date-time dropdown
-  const dateTimeSelect = document.getElementById('dateTimeSlot');
-  dateTimeSelect.innerHTML = '<option value="">Select date and time</option>';
-  const slots = getDateTimeSlots();
-  
-  slots.forEach(slot => {
-    const option = document.createElement('option');
-    option.value = `${slot.date}|${slot.time}`;
-    option.textContent = `${slot.date} ${slot.time}`;
-    option.disabled = slot.datetime < new Date(); // Disable past slots
-    dateTimeSelect.appendChild(option);
-  });
-}
+    // Update the booking interface
+    async function updateBookingInterface() {
+      await loadConfig();
+      const location = sessionStorage.getItem('location')?.toLowerCase() || 'bangalore';
+      
+      // Update destinations
+      const destSelect = document.getElementById('destination');
+      destSelect.innerHTML = '<option value="">Select destination</option>';
+      config[location].destinations.forEach(dest => {
+        const option = document.createElement('option');
+        option.value = option.textContent = dest;
+        destSelect.appendChild(option);
+      });
+      
+      // Update date-time dropdown
+      const dateTimeSelect = document.getElementById('dateTimeSlot');
+      dateTimeSelect.innerHTML = '<option value="">Select date and time</option>';
+      const slots = getDateTimeSlots();
+      
+      slots.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = `${slot.date}|${slot.time}`;
+        option.textContent = `${slot.date} ${slot.time}`;
+        option.disabled = slot.datetime < new Date(); // Disable past slots
+        dateTimeSelect.appendChild(option);
+      });
+    }
+
     // Handle booking submission
     async function handleBooking(e) {
-  e.preventDefault();
-  try {
-    const dest = document.getElementById('destination').value;
-    const dateTime = document.getElementById('dateTimeSlot').value;
-    const [travelDate, time] = dateTime.split('|'); // Split the combined value
-    const employeeId = sessionStorage.getItem('username');
-    const location = sessionStorage.getItem('location');
-    
-    if (!dest || !dateTime) {
-      showAlert('Please fill all required fields', 'error');
-      return;
-    }
+      e.preventDefault();
+      document.getElementById('global-loader').classList.remove('hidden');
+
+      try {
+        const dest = document.getElementById('destination').value;
+        const dateTime = document.getElementById('dateTimeSlot').value;
+        const [travelDate, time] = dateTime.split('|');
+        const employeeId = sessionStorage.getItem('username');
+        const location = sessionStorage.getItem('location');
+
+        if (!dest || !dateTime) {
+          showAlert('Please fill all required fields', 'error');
+          return;
+        }
 
         const selectedDate = new Date(travelDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         if (selectedDate < today) {
           showAlert('Travel date cannot be in the past', 'error');
           return;
@@ -359,41 +618,46 @@ async function updateBookingInterface() {
 
         const response = await fetch('/api/bookings', {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ 
-            employeeId, 
-            location, 
-            destination: dest, 
+          body: JSON.stringify({
+            employeeId,
+            location,
+            destination: dest,
             timeSlot: time,
-            travelDate
+            travelDate,
           })
         });
 
         const result = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(result.error || 'Failed to create booking');
         }
 
-        // Show success
         document.getElementById('confirmationDestination').textContent = dest;
         document.getElementById('confirmationTime').textContent = `${formatDate(travelDate)} at ${time}`;
         document.getElementById('confirmationModal').classList.remove('hidden');
-        
-        // Refresh bookings list
+
+        setTimeout(() => {
+  loadMyBookings().then(() => {
+    // Ensure the booking cards animate in
+    initAnimations();
+  });
+}, 300);
         await loadMyBookings();
         showAlert('Booking created successfully!', 'success');
-
       } catch (error) {
         console.error('Booking error:', error);
         showAlert(error.message, 'error');
+      } finally {
+        document.getElementById('global-loader').classList.add('hidden');
       }
     }
 
-    // Load user's bookings
+    // Load user's bookings with collapsible sections
     async function loadMyBookings() {
       try {
         const employeeId = sessionStorage.getItem('username');
@@ -406,65 +670,122 @@ async function updateBookingInterface() {
         if (!response.ok) throw new Error('Failed to load bookings');
         
         const bookings = await response.json();
-        const bookingsList = document.getElementById('myBookingsList');
-        bookingsList.innerHTML = '';
-
-        // ✅ Sort by status: confirmed → pending → cancelled
+        document.getElementById('recentBookingsList').innerHTML = '';
+        document.getElementById('olderBookingsList').innerHTML = '';
+        const recentBookingsList = document.getElementById('recentBookingsList');
+        const olderBookingsList = document.getElementById('olderBookingsList');
+        const noBookingsMessage = document.getElementById('noBookingsMessage');
+        const toggleBtn = document.getElementById('toggleBookingsBtn');
+        
+        // Clear existing content
+        recentBookingsList.innerHTML = '';
+        olderBookingsList.innerHTML = '';
+        
+        // Sort by date (newest first) and then by status
         bookings.sort((a, b) => {
+          const dateA = new Date(a.travelDate);
+          const dateB = new Date(b.travelDate);
+          if (dateB - dateA !== 0) return dateB - dateA;
+          
           const order = { confirmed: 0, pending: 1, cancelled: 2 };
           return order[a.status] - order[b.status];
         });
         
         if (bookings.length === 0) {
-          bookingsList.innerHTML = '<p class="text-gray-300 text-center py-4">No bookings found</p>';
+          noBookingsMessage.classList.remove('hidden');
+          toggleBtn.classList.add('hidden');
           return;
+        } else {
+          noBookingsMessage.classList.add('hidden');
         }
         
-        bookings.forEach(booking => {
-          const bookingElement = document.createElement('div');
-          bookingElement.className =
-            'booking-card rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm p-4 text-white mb-4';
-
-          const statusColor =
-            booking.status === 'confirmed'
-              ? 'bg-green-500/20 text-green-300 border-green-500/30'
-              : booking.status === 'cancelled'
-              ? 'bg-red-500/20 text-red-300 border-red-500/30'
-              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-
-          bookingElement.innerHTML = `
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="text-sm font-semibold">${booking.destination}</div>
-                <div class="text-xs text-gray-300 mt-1">
-                  <i class="fas fa-calendar-day mr-1"></i>${formatDate(booking.travelDate)} 
-                  <i class="fas fa-clock ml-3 mr-1"></i>${booking.timeSlot}
-                </div>
-                <span class="inline-block mt-2 text-xs px-2 py-1 font-medium rounded-md border ${statusColor}">
-                  ${booking.status}
-                </span>
-              </div>
-
-              <div class="space-y-2 text-right ml-3">
-                ${booking.status !== 'cancelled' ? `
-                  <button onclick="cancelBooking('${booking._id}')" 
-                    class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-300 px-2 py-1 rounded-md transition-colors duration-200">
-                    <i class="fas fa-times-circle mr-1"></i>Cancel
-                  </button>` : ''}
-                ${booking.status === 'pending' ? `
-                  <button onclick="confirmBooking('${booking._id}')" 
-                    class="text-xs bg-green-500/10 hover:bg-green-500/20 text-green-300 px-2 py-1 rounded-md transition-colors duration-200">
-                    <i class="fas fa-check-circle mr-1"></i>Confirm
-                  </button>` : ''}
-              </div>
-            </div>
-          `;
-          bookingsList.appendChild(bookingElement);
+        // Split into recent (first 3) and older bookings
+        const recentBookings = bookings.slice(0, 3);
+        const olderBookings = bookings.slice(3);
+        
+        // Display recent bookings
+        recentBookings.forEach((booking, index) => {
+          const card = createBookingCard(booking);
+          card.style.animationDelay = `${index * 0.1}s`;
+          recentBookingsList.appendChild(card);
         });
-      } catch (error) {
-        console.error('Error loading bookings:', error);
-        showAlert('Failed to load bookings', 'error');
-      }
+        
+        // Display older bookings if any
+        if (olderBookings.length > 0) {
+          olderBookings.forEach((booking, index) => {
+            const card = createBookingCard(booking);
+            card.style.animationDelay = `${index * 0.1}s`;
+            olderBookingsList.appendChild(card);
+          });
+          toggleBtn.classList.remove('hidden');
+        } else {
+          toggleBtn.classList.add('hidden');
+        }
+        setTimeout(() => {
+      document.querySelectorAll('.booking-card').forEach(card => {
+        card.style.opacity = '1';
+      });
+    }, 50);
+    
+  } catch (error) {
+    console.error('Error loading bookings:', error);
+    showAlert('Failed to load bookings', 'error');
+  }
+}
+
+    // Helper function to create booking card element
+    function createBookingCard(booking) {
+      const bookingElement = document.createElement('div');
+      bookingElement.className =
+        'booking-card rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm p-3 text-white';
+
+      const statusColor =
+        booking.status === 'confirmed'
+          ? 'bg-green-500/20 text-green-300 border-green-500/30'
+          : booking.status === 'cancelled'
+          ? 'bg-red-500/20 text-red-300 border-red-500/30'
+          : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+
+      bookingElement.innerHTML = `
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-semibold">${booking.destination}</div>
+            <div class="text-2xs text-gray-300 mt-1">
+              <i class="fas fa-calendar-day mr-1"></i>${formatDate(booking.travelDate)} 
+              <i class="fas fa-clock ml-2 mr-1"></i>${booking.timeSlot}
+            </div>
+            <span class="inline-block mt-1 text-2xs px-1.5 py-0.5 font-medium rounded border ${statusColor}">
+              ${booking.status}
+            </span>
+          </div>
+
+          <div class="space-y-1 text-right ml-2">
+            ${booking.status !== 'cancelled' ? `
+              <button onclick="cancelBooking('${booking._id}')" 
+                class="text-2xs bg-red-500/10 hover:bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded transition-colors duration-200">
+                <i class="fas fa-times-circle mr-0.5"></i>Cancel
+              </button>` : ''}
+            ${booking.status === 'pending' ? `
+              <button onclick="confirmBooking('${booking._id}')" 
+                class="text-2xs bg-green-500/10 hover:bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded transition-colors duration-200">
+                <i class="fas fa-check-circle mr-0.5"></i>Confirm
+              </button>` : ''}
+          </div>
+        </div>
+      `;
+      return bookingElement;
+    }
+
+    // Toggle older bookings visibility
+    function toggleOlderBookings() {
+      const btn = document.getElementById('toggleBookingsBtn');
+      const olderBookings = document.getElementById('olderBookingsList');
+      
+      btn.classList.toggle('active');
+      olderBookings.classList.toggle('show');
+      
+      const span = btn.querySelector('span');
+      span.textContent = olderBookings.classList.contains('show') ? 'Hide older bookings' : 'Show all bookings';
     }
 
     // Cancel booking
@@ -483,7 +804,9 @@ async function updateBookingInterface() {
         
         if (!response.ok) throw new Error('Failed to cancel booking');
         
-        await loadMyBookings();
+        loadMyBookings().then(() => {
+        initAnimations(); // Re-initialize animations for new cards
+});
         showAlert('Booking cancelled successfully', 'success');
       } catch (error) {
         console.error('Error cancelling booking:', error);
@@ -505,7 +828,9 @@ async function updateBookingInterface() {
         
         if (!response.ok) throw new Error('Failed to confirm booking');
         
-        await loadMyBookings();
+        loadMyBookings().then(() => {
+        initAnimations(); // Re-initialize animations for new cards
+});
         showAlert('Booking confirmed successfully', 'success');
       } catch (error) {
         console.error('Error confirming booking:', error);
@@ -518,7 +843,6 @@ async function updateBookingInterface() {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-US', { 
         weekday: 'short', 
-        year: 'numeric', 
         month: 'short', 
         day: 'numeric' 
       });
@@ -533,7 +857,7 @@ async function updateBookingInterface() {
           type === 'success' ? 'fa-check-circle' :
           'fa-info-circle'
         } mr-2"></i>
-        <span>${message}</span>
+        <span class="text-sm">${message}</span>
       `;
       document.body.appendChild(alertDiv);
       
@@ -544,8 +868,12 @@ async function updateBookingInterface() {
     }
 
     function closeModal() {
-      document.getElementById('confirmationModal').classList.add('hidden');
-    }
+  document.getElementById('confirmationModal').classList.add('hidden');
+  setTimeout(() => {
+    loadMyBookings();
+    document.getElementById('recentBookingsList')?.scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+}
 
     function logout() {
       localStorage.removeItem('token');
@@ -553,85 +881,50 @@ async function updateBookingInterface() {
       window.location.href = 'index.html';
     }
 
+    // Initialize animations
+    function initAnimations() {
+  // Animate form elements
+  const formElements = document.querySelectorAll('#bookingForm > div');
+  formElements.forEach((el, i) => {
+    el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.1 + 0.3}s forwards`;
+    el.style.opacity = '0';
+  });
+
+  // Animate booking cards
+  document.querySelectorAll('.booking-card').forEach((card, i) => {
+    card.style.animation = `fadeInUp 0.5s ease-out ${i * 0.1}s forwards`;
+    card.style.opacity = '0';
+  });
+}
+
     // Initialize the app
-    async function init() {
+    function init() {
       const location = sessionStorage.getItem('location');
       const username = sessionStorage.getItem('username');
-      
+
       if (!location || !username || !token) {
         window.location.href = 'index.html';
         return;
       }
 
-      document.getElementById('currentLocation').textContent = 
+      document.getElementById('currentLocation').textContent =
         location.charAt(0).toUpperCase() + location.slice(1);
 
-      // Set minimum date for date picker to today
-      const today = new Date().toISOString().split('T')[0];
+      initWelcomeBanner();
+      generateMoodMessage();
 
-      await updateBookingInterface();
-      await loadMyBookings();
+      document.getElementById('toggleBookingsBtn').addEventListener('click', toggleOlderBookings);
+
+      updateBookingInterface();
+      loadMyBookings();
+      initAnimations();
+
       document.getElementById('bookingForm').onsubmit = handleBooking;
-    }
-    async function handleBooking(e) {
-  e.preventDefault();
-  document.getElementById('global-loader').classList.remove('hidden');
 
-  try {
-    const dest = document.getElementById('destination').value;
-    const dateTime = document.getElementById('dateTimeSlot').value;
-    const [travelDate, time] = dateTime.split('|');
-    const employeeId = sessionStorage.getItem('username');
-    const location = sessionStorage.getItem('location');
-
-    if (!dest || !dateTime) {
-      showAlert('Please fill all required fields', 'error');
-      return;
+      // Initialize animations
+      setTimeout(initAnimations, 100);
     }
 
-    const selectedDate = new Date(travelDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (selectedDate < today) {
-      showAlert('Travel date cannot be in the past', 'error');
-      return;
-    }
-
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        employeeId,
-        location,
-        destination: dest,
-        timeSlot: time,
-        travelDate,
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to create booking');
-    }
-
-    document.getElementById('confirmationDestination').textContent = dest;
-    document.getElementById('confirmationTime').textContent = `${formatDate(travelDate)} at ${time}`;
-    document.getElementById('confirmationModal').classList.remove('hidden');
-
-    await loadMyBookings();
-    showAlert('Booking created successfully!', 'success');
-  } catch (error) {
-    console.error('Booking error:', error);
-    showAlert(error.message, 'error');
-  } finally {
-    document.getElementById('global-loader').classList.add('hidden');
-  }
-}
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
