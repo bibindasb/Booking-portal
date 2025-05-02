@@ -524,6 +524,31 @@ function filterDestinations(location, query) {
   });
 }
 
+function formatLogDetails(action, details = {}) {
+  if (!details || typeof details !== 'object') return '-';
+
+  switch (action) {
+    case 'login':
+      const role = details.isAdmin ? 'Admin' : 'User';
+      const method = details.method === 'local' ? 'Local Login' : 'Active Directory';
+      return `Logged in as ${role} via ${method}`;
+
+    case 'config_update':
+      const location = details.location || 'unknown';
+      const tsCount = details.changes?.timeSlots?.length || 0;
+      const destCount = details.changes?.destinations?.length || 0;
+      return `Updated config for ${location} (${tsCount} time slot${tsCount !== 1 ? 's' : ''}, ${destCount} destination${destCount !== 1 ? 's' : ''})`;
+
+    case 'booking_update':
+      return `Booking status changed to "${details.status || 'unknown'}"`;
+
+    default:
+      return Object.entries(details)
+        .map(([key, val]) => `${key}: ${typeof val === 'object' ? JSON.stringify(val) : val}`)
+        .join(', ');
+  }
+}
+
 let currentLogPage = 1;
 let totalLogs = 0;
 
@@ -580,7 +605,7 @@ async function loadAuditLogs(page = 1, limit = 50) {
           <td class="px-4 py-2">${new Date(log.timestamp).toLocaleString()}</td>
           <td class="px-4 py-2">${log.user}</td>
           <td class="px-4 py-2">${log.action}</td>
-          <td class="px-4 py-2">${JSON.stringify(log.details)}</td>
+          <td>${formatLogDetails(log.action, log.details)}</td>
         `;
         tbody.appendChild(tr);
       }
