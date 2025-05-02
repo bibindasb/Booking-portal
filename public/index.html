@@ -95,23 +95,6 @@
       }
     }
 
-    .toast-success {
-      border-color: #22c55e;
-      background-color: #ecfdf5;
-      color: #16a34a;
-    }
-
-    .toast-error {
-      border-color: #ef4444;
-      background-color: #fef2f2;
-      color: #dc2626;
-    }
-
-    .toast-info {
-      border-color: #0ea5e9;
-      background-color: #e0f2fe;
-      color: #0369a1;
-    }
   </style>
 </head>
 
@@ -200,41 +183,44 @@
   </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Show loading state
-      const loginButton = document.getElementById('loginButton');
-      const loginText = document.getElementById('loginText');
-      const loginIcon = document.getElementById('loginIcon');
-      const loginSpinner = document.getElementById('loginSpinner');
-      
-      loginButton.disabled = true;
-      loginText.textContent = 'Authenticating...';
-      loginIcon.style.display = 'none';
-      loginSpinner.style.display = 'block';
-      
-      // Simulate authentication delay (replace with actual auth call)
-      setTimeout(() => {
-        // This is where you would normally make your authentication API call
-        // For demonstration, we're just simulating a delay
-        
-        // Hide loading state
-        loginButton.disabled = false;
-        loginText.textContent = 'Sign In';
-        loginIcon.style.display = 'inline-block';
-        loginSpinner.style.display = 'none';
-        
-        // Show toast notification (success or error based on response)
-        showToast('Authentication successful! Redirecting...', 'success');
-        
-        // In a real app, you would redirect on success or show error
-        // window.location.href = '/dashboard.html';
-        
-      }, 2000); // Simulate 2 second delay
-    });
+   document.getElementById('loginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
 
-    const togglePasswordBtn = document.getElementById('togglePassword');
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  const loginButton  = document.getElementById('loginButton');
+  const loginText    = document.getElementById('loginText');
+  const loginIcon    = document.getElementById('loginIcon');
+  const loginSpinner = document.getElementById('loginSpinner');
+
+  // Start loading UI
+  loginButton.disabled = true;
+  loginText.textContent = 'Authenticating...';
+  loginIcon.style.display = 'none';
+  loginSpinner.style.display = 'block';
+
+  // Simulated authentication check (replace with real API later)
+  setTimeout(() => {
+    // Stop loading UI
+    loginButton.disabled = false;
+    loginText.textContent = 'Sign In';
+    loginIcon.style.display = 'inline-block';
+    loginSpinner.style.display = 'none';
+
+    // Check credentials
+    if (username === 'employee123' && password === 'letmein') {
+      // Redirect only on correct login
+      window.location.href = '/booking.html';
+    } else {
+      // Optional: clear password or reset without popups
+      document.getElementById('password').value = '';
+    }
+
+  }, 1500); // Adjust simulated delay as needed
+});
+
+  const togglePasswordBtn = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
 
   togglePasswordBtn.addEventListener('click', function () {
