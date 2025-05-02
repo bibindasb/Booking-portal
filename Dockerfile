@@ -18,6 +18,11 @@ RUN apk add --no-cache tzdata && \
 # Copy entire app source code into container
 COPY . .
 
+# Ensure dist & src folders exist
+RUN mkdir -p public/dist src
+RUN npm install -g serve
+RUN npm run build:css
+
 # Set environment PORT (optional)
 ENV PORT=3000
 

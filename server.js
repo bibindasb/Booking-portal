@@ -25,7 +25,19 @@ const { authenticateADUser, isUserInGroup } = require('./utils/adAuth');
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.woff2')) {
+      res.setHeader('Content-Type', 'font/woff2');
+    }
+    if (filePath.endsWith('.woff')) {
+      res.setHeader('Content-Type', 'font/woff');
+    }
+    if (filePath.endsWith('.ttf')) {
+      res.setHeader('Content-Type', 'font/ttf');
+    }
+  }
+}));
 
 // Admin Credentials
 const ADMIN_CREDS = {
