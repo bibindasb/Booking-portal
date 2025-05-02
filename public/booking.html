@@ -103,6 +103,9 @@
 </head>
 <body class="min-h-screen font-sans bg-cover bg-no-repeat bg-center text-dark" style="background-image: url('/assets/background.jpg');">
   <!-- Background overlay with gradient -->
+  <div id="global-loader" class="fixed inset-0 bg-white bg-opacity-60 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="border-4 border-gray-200 border-t-blue-600 rounded-full w-12 h-12 animate-spin"></div>
+  </div>
   <div class="fixed inset-0 bg-gradient-to-br from-black/30 to-black/70 backdrop-blur-sm z-0"></div>
 
   <header class="z-10 relative bg-white/10 backdrop-blur-md shadow-lg border-b border-white/20">
@@ -331,7 +334,6 @@ async function updateBookingInterface() {
     dateTimeSelect.appendChild(option);
   });
 }
-
     // Handle booking submission
     async function handleBooking(e) {
   e.preventDefault();
@@ -572,7 +574,65 @@ async function updateBookingInterface() {
       await loadMyBookings();
       document.getElementById('bookingForm').onsubmit = handleBooking;
     }
+    async function handleBooking(e) {
+  e.preventDefault();
+  document.getElementById('global-loader').classList.remove('hidden');
 
+  try {
+    const dest = document.getElementById('destination').value;
+    const dateTime = document.getElementById('dateTimeSlot').value;
+    const [travelDate, time] = dateTime.split('|');
+    const employeeId = sessionStorage.getItem('username');
+    const location = sessionStorage.getItem('location');
+
+    if (!dest || !dateTime) {
+      showAlert('Please fill all required fields', 'error');
+      return;
+    }
+
+    const selectedDate = new Date(travelDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      showAlert('Travel date cannot be in the past', 'error');
+      return;
+    }
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        employeeId,
+        location,
+        destination: dest,
+        timeSlot: time,
+        travelDate,
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to create booking');
+    }
+
+    document.getElementById('confirmationDestination').textContent = dest;
+    document.getElementById('confirmationTime').textContent = `${formatDate(travelDate)} at ${time}`;
+    document.getElementById('confirmationModal').classList.remove('hidden');
+
+    await loadMyBookings();
+    showAlert('Booking created successfully!', 'success');
+  } catch (error) {
+    console.error('Booking error:', error);
+    showAlert(error.message, 'error');
+  } finally {
+    document.getElementById('global-loader').classList.add('hidden');
+  }
+}
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>

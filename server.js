@@ -15,6 +15,8 @@ const bookingService = require('./services/bookingService');
 const locationConfigService = require('./services/locationConfigService');
 const { sendReportEmail, verifyEmailTransport } = require('./services/emailService');
 const { scheduleBookingReport, rescheduleExistingBookings } = require('./utils/scheduler');
+const { sendBookingConfirmationEmail } = require('./services/emailService');
+const { getUserEmail } = require('./utils/adAuth');
 
 // Auth utilities
 const { authenticateUser, authenticateAdmin, generateToken, verifyToken } = require('./utils/auth');
@@ -119,7 +121,6 @@ async function logAction(req, action, details = {}) {
 }
 
 // Config endpoints
-// Config endpoints
 app.get('/api/config', async (req, res) => {
   try {
     const configs = await locationConfigService.getConfigs();
@@ -153,6 +154,30 @@ app.post('/api/config', authenticateAdmin, async (req, res) => {
   }
 });
 
+function formatAuditDetails(action, details = {}) {
+  if (!details || typeof details !== 'object') return '-';
+
+  switch (action) {
+    case 'login':
+      const method = details.method === 'local' ? 'Local Login' : 'Active Directory';
+      const role = details.isAdmin ? 'Admin' : 'User';
+      return `Logged in as ${role} via ${method}`;
+
+    case 'config_update':
+      const loc = details.location?.charAt(0).toUpperCase() + details.location?.slice(1);
+      const tsLen = details.changes?.timeSlots?.length || 0;
+      const destLen = details.changes?.destinations?.length || 0;
+      return `Updated config for ${loc} (${tsLen} time slot${tsLen !== 1 ? 's' : ''}, ${destLen} destination${destLen !== 1 ? 's' : ''})`;
+
+    case 'booking_update':
+      return `Booking status changed to "${details.status || 'unknown'}"`;
+
+    default:
+      return Object.entries(details)
+        .map(([key, val]) => `${key}: ${typeof val === 'object' ? JSON.stringify(val) : val}`)
+        .join(', ');
+  }
+}
 
 // Audit endpoint
 app.get('/api/audit-logs', authenticateAdmin, async (req, res) => {
@@ -161,6 +186,7 @@ app.get('/api/audit-logs', authenticateAdmin, async (req, res) => {
     const filter = {};
 
     if (action) filter.action = action;
+
     if (search) {
       const regex = new RegExp(search, 'i');
       filter.$or = [
@@ -170,34 +196,53 @@ app.get('/api/audit-logs', authenticateAdmin, async (req, res) => {
       ];
     }
 
+    // ✅ First query the logs
     const logs = await AuditLog.find(filter)
       .sort({ timestamp: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
 
+    // ✅ Then count total separately
     const total = await AuditLog.countDocuments(filter);
-    res.json({ total, logs });
 
+    // ✅ Then return both
+    res.json({
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      logs
+    });
   } catch (err) {
     console.error('Audit log fetch error:', err);
-    res.status(500).json({ error: 'Failed to fetch audit logs' });
+    return res.status(500).json({ error: 'Failed to fetch audit logs' });
   }
 });
 
-// Booking endpoints
+
+// Booking endpoint with email confirmation
 app.post('/api/bookings', authenticateUser, async (req, res) => {
   try {
     const booking = await bookingService.createBooking(req.body);
+
+    // ✅ Fetch user's email from AD via username
+    const email = await getUserEmail(req.user.userId); // assume userId = sAMAccountName
+    if (email) {
+      await sendBookingConfirmationEmail(email, booking);
+      console.log(`📧 Confirmation email sent to ${email}`);
+    } else {
+      console.warn('⚠️ Could not fetch email for user:', req.user.userId);
+    }
+
     res.json({ success: true, booking });
   } catch (error) {
-    if (error.message && (
-         error.message.includes('already have an active booking') ||
-         error.message.includes('Cancellation is no longer allowed')
-    )) {
+    if (
+      error.message &&
+      (error.message.includes('already have an active booking') ||
+        error.message.includes('Cancellation is no longer allowed'))
+    ) {
       res.status(400).json({ error: error.message });
     } else {
-      console.error('Booking Critical Server Error:', error);
+      console.error('❌ Booking Critical Server Error:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   }

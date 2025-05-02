@@ -44,6 +44,27 @@ function authenticateADUser(username, password) {
   });
 }
 
+function getUserEmail(username) {
+  return new Promise((resolve) => {
+    const domain = process.env.AD_DOMAIN || 'internal.media.net';
+    const loginUser = username.includes('@') ? username : `${username}@${domain}`;
+
+    ad.findUser(loginUser, (err, user) => {
+      if (err) {
+        console.error('[AD] Error fetching user object:', err);
+        return resolve(null);
+      }
+      if (!user || !user.mail) {
+        console.warn(`[AD] No email found for user: ${loginUser}`);
+        return resolve(null);
+      }
+
+      console.log(`[AD] Email for ${loginUser}: ${user.mail}`);
+      resolve(user.mail);
+    });
+  });
+}
+
 /**
  * Check whether the authenticated user is a member of a specific group (by DN).
  *
@@ -78,4 +99,5 @@ function isUserInGroup(username, groupDN) {
 module.exports = {
   authenticateADUser,
   isUserInGroup,
+  getUserEmail
 };
