@@ -12,7 +12,7 @@ services:
       - TZ=Asia/Kolkata  
 
   mongo:
-    image: mongo:6
+    image: mongo:4.4
     volumes:
       - mongo-data:/data/db
     ports:
